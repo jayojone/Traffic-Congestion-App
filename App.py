@@ -52,7 +52,8 @@ st.markdown("""
     .moderate { background-color: #fff4cc; color: #8a6d00; }
     .high  { background-color: #ffe0cc; color: #b04a00; }
     .veryhigh { background-color: #ffd6d6; color: #a30000; }
-    .caption-img { font-size: 0.8rem; color: #6b7385; text-align: center; }
+    .loc-name { font-size: 0.95rem; font-weight: 700; color: #1a2b4c; text-align: center; margin-top: 0.4rem; }
+    .loc-badge { font-size: 0.75rem; text-align: center; font-weight: 700; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -71,7 +72,6 @@ def save_stats(stats):
 
 stats = load_stats()
 
-# Count a view only once per browser session
 if "counted" not in st.session_state:
     stats["views"] += 1
     save_stats(stats)
@@ -86,6 +86,34 @@ def load_artifacts():
     return model, encoders, model_columns
 
 model, encoders, model_columns = load_artifacts()
+
+# ---------- ORIGINAL SVG ILLUSTRATION (self-drawn, no external images) ----------
+def road_illustration(sky_color, road_color, badge_color, badge_text_color):
+    return f"""
+    <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:10px;">
+        <rect x="0" y="0" width="300" height="170" fill="{sky_color}"/>
+        <rect x="10" y="20" width="34" height="60" fill="#ffffff" opacity="0.55"/>
+        <rect x="50" y="10" width="26" height="70" fill="#ffffff" opacity="0.45"/>
+        <rect x="230" y="15" width="30" height="65" fill="#ffffff" opacity="0.5"/>
+        <rect x="264" y="25" width="24" height="55" fill="#ffffff" opacity="0.4"/>
+        <polygon points="0,170 0,110 300,80 300,170" fill="{road_color}"/>
+        <line x1="20" y1="128" x2="90" y2="122" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
+        <line x1="130" y1="118" x2="200" y2="112" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
+        <line x1="230" y1="108" x2="290" y2="104" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
+        <g>
+            <rect x="60" y="128" width="34" height="16" rx="3" fill="#2e7bf6"/>
+            <circle cx="68" cy="146" r="5" fill="#1a2b4c"/>
+            <circle cx="86" cy="146" r="5" fill="#1a2b4c"/>
+        </g>
+        <g>
+            <rect x="150" y="120" width="30" height="14" rx="3" fill="#f6a92e"/>
+            <circle cx="157" cy="136" r="4.5" fill="#1a2b4c"/>
+            <circle cx="173" cy="136" r="4.5" fill="#1a2b4c"/>
+        </g>
+        <rect x="196" y="18" width="16" height="16" rx="8" fill="{badge_color}"/>
+        <circle cx="204" cy="26" r="4" fill="{badge_text_color}"/>
+    </svg>
+    """
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
@@ -110,7 +138,6 @@ with st.sidebar:
         "Data Science and Machine Learning."
     )
 
-    # ---------- ADMIN LOGIN (hidden section) ----------
     st.markdown("---")
     with st.expander("🔐 Admin Login"):
         admin_user = st.text_input("Username", key="admin_user")
@@ -142,27 +169,22 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# ---------- ILLUSTRATIVE IMAGES SECTION ----------
-st.markdown('<p class="section-header">🖼️ Understanding Congestion Hotspots</p>', unsafe_allow_html=True)
-st.caption(
-    "Representative images of busy roads included in this study. "
-    "(Place your own images inside an `images/` folder next to App.py — see note below.)"
-)
+# ---------- ILLUSTRATIVE SECTION (original artwork, no external images) ----------
+st.markdown('<p class="section-header">🖼️ Congestion Hotspots at a Glance</p>', unsafe_allow_html=True)
+st.caption("Illustrative graphics summarizing typical congestion severity found in this study's analysis.")
 
-image_info = [
-    ("images/mwenge.jpg", "Mwenge — a major northern junction"),
-    ("images/ubungo.jpg", "Ubungo — a key interchange linking multiple highways"),
-    ("images/kariakoo.jpg", "Kariakoo — dense commercial-area traffic"),
+locations_summary = [
+    ("Ubungo", "#dfe8ff", "#5b7fd6", "#a30000", "#ffffff", "Very High"),
+    ("Kariakoo", "#ffe9d6", "#d68a5b", "#b04a00", "#ffffff", "High"),
+    ("Mwenge", "#fff6d6", "#d6c05b", "#8a6d00", "#ffffff", "Moderate"),
 ]
 
 cols = st.columns(3)
-for col, (path, caption) in zip(cols, image_info):
+for col, (name, sky, road, badge, badge_text, level) in zip(cols, locations_summary):
     with col:
-        if os.path.exists(path):
-            st.image(path, use_container_width=True)
-        else:
-            st.info("Image not found — add it to the `images/` folder.")
-        st.markdown(f'<p class="caption-img">{caption}</p>', unsafe_allow_html=True)
+        st.markdown(road_illustration(sky, road, badge, badge_text), unsafe_allow_html=True)
+        st.markdown(f'<p class="loc-name">{name}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="loc-badge">Typical congestion: {level}</p>', unsafe_allow_html=True)
 
 # ---------- SECTION 1: ROAD & TIME ----------
 st.markdown('<p class="section-header">📍 Road & Time Details</p>', unsafe_allow_html=True)
