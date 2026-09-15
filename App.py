@@ -53,7 +53,9 @@ st.markdown("""
     .high  { background-color: #ffe0cc; color: #b04a00; }
     .veryhigh { background-color: #ffd6d6; color: #a30000; }
     .loc-name { font-size: 0.95rem; font-weight: 700; color: #1a2b4c; text-align: center; margin-top: 0.4rem; }
-    .loc-badge { font-size: 0.75rem; text-align: center; font-weight: 700; }
+    .loc-badge { font-size: 0.75rem; text-align: center; font-weight: 700; margin-bottom: 0.6rem; }
+    .meter-track { background-color: #e6e9f0; border-radius: 6px; height: 8px; width: 100%; overflow: hidden; }
+    .meter-fill { height: 8px; border-radius: 6px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -87,31 +89,83 @@ def load_artifacts():
 
 model, encoders, model_columns = load_artifacts()
 
-# ---------- ORIGINAL SVG ILLUSTRATION (self-drawn, no external images) ----------
-def road_illustration(sky_color, road_color, badge_color, badge_text_color):
+# ---------- ORIGINAL SVG SCENES (self-drawn, no external images) ----------
+
+def car(x, y, w, h, body_color, scale=1.0):
+    return f"""
+    <g transform="translate({x},{y}) scale({scale})">
+        <rect x="0" y="0" width="{w}" height="{h}" rx="2.5" fill="{body_color}"/>
+        <rect x="{w*0.15}" y="-{h*0.35}" width="{w*0.7}" height="{h*0.4}" rx="2" fill="{body_color}" opacity="0.85"/>
+        <circle cx="{w*0.22}" cy="{h}" r="{h*0.32}" fill="#22283a"/>
+        <circle cx="{w*0.78}" cy="{h}" r="{h*0.32}" fill="#22283a"/>
+    </g>
+    """
+
+def ubungo_illustration():
+    cars_top = "".join(
+        car(24 + i * 26, 58, 20, 10, c) for i, c in enumerate(
+            ["#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c"]
+        )
+    )
+    cars_bottom = "".join(
+        car(20 + i * 27, 128, 20, 10, c) for i, c in enumerate(
+            ["#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b"]
+        )
+    )
     return f"""
     <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:10px;">
-        <rect x="0" y="0" width="300" height="170" fill="{sky_color}"/>
-        <rect x="10" y="20" width="34" height="60" fill="#ffffff" opacity="0.55"/>
-        <rect x="50" y="10" width="26" height="70" fill="#ffffff" opacity="0.45"/>
-        <rect x="230" y="15" width="30" height="65" fill="#ffffff" opacity="0.5"/>
-        <rect x="264" y="25" width="24" height="55" fill="#ffffff" opacity="0.4"/>
-        <polygon points="0,170 0,110 300,80 300,170" fill="{road_color}"/>
-        <line x1="20" y1="128" x2="90" y2="122" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
-        <line x1="130" y1="118" x2="200" y2="112" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
-        <line x1="230" y1="108" x2="290" y2="104" stroke="#ffffff" stroke-width="3" stroke-dasharray="10,8"/>
-        <g>
-            <rect x="60" y="128" width="34" height="16" rx="3" fill="#2e7bf6"/>
-            <circle cx="68" cy="146" r="5" fill="#1a2b4c"/>
-            <circle cx="86" cy="146" r="5" fill="#1a2b4c"/>
-        </g>
-        <g>
-            <rect x="150" y="120" width="30" height="14" rx="3" fill="#f6a92e"/>
-            <circle cx="157" cy="136" r="4.5" fill="#1a2b4c"/>
-            <circle cx="173" cy="136" r="4.5" fill="#1a2b4c"/>
-        </g>
-        <rect x="196" y="18" width="16" height="16" rx="8" fill="{badge_color}"/>
-        <circle cx="204" cy="26" r="4" fill="{badge_text_color}"/>
+        <rect x="0" y="0" width="300" height="170" fill="#dfe8ff"/>
+        <rect x="14" y="12" width="28" height="55" fill="#ffffff" opacity="0.55"/>
+        <rect x="250" y="18" width="30" height="50" fill="#ffffff" opacity="0.5"/>
+        <path d="M0 95 Q150 55 300 95 L300 115 Q150 75 0 115 Z" fill="#8b93a8"/>
+        <rect x="30" y="115" width="8" height="45" fill="#6b7285"/>
+        <rect x="140" y="105" width="8" height="55" fill="#6b7285"/>
+        <rect x="250" y="115" width="8" height="45" fill="#6b7285"/>
+        <rect x="0" y="140" width="300" height="30" fill="#9aa1b5"/>
+        {cars_top}
+        {cars_bottom}
+    </svg>
+    """
+
+def kariakoo_illustration():
+    cars = "".join(
+        car(16 + i * 24, 112, 18, 10, c) for i, c in enumerate(
+            ["#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6", "#f2a33c", "#e35b5b", "#5b7fd6"]
+        )
+    )
+    return f"""
+    <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:10px;">
+        <rect x="0" y="0" width="300" height="170" fill="#ffe9d6"/>
+        <rect x="0" y="20" width="60" height="70" fill="#d68a5b"/>
+        <rect x="65" y="14" width="55" height="76" fill="#e0996a"/>
+        <rect x="185" y="16" width="50" height="74" fill="#d68a5b"/>
+        <rect x="240" y="20" width="60" height="70" fill="#e0996a"/>
+        <rect x="8" y="30" width="12" height="12" fill="#fff4e0"/>
+        <rect x="78" y="26" width="12" height="12" fill="#fff4e0"/>
+        <rect x="196" y="28" width="12" height="12" fill="#fff4e0"/>
+        <rect x="256" y="30" width="12" height="12" fill="#fff4e0"/>
+        <rect x="0" y="95" width="300" height="75" fill="#8b8f9c"/>
+        <line x1="0" y1="132" x2="300" y2="132" stroke="#ffffff" stroke-width="2" stroke-dasharray="8,6"/>
+        {cars}
+    </svg>
+    """
+
+def mwenge_illustration():
+    cars = "".join(
+        car(30 + i * 62, 118, 20, 11, c) for i, c in enumerate(
+            ["#5b9fd6", "#d6c05b", "#5bd68f"]
+        )
+    )
+    return f"""
+    <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:10px;">
+        <rect x="0" y="0" width="300" height="170" fill="#fff6d6"/>
+        <rect x="20" y="18" width="30" height="60" fill="#ffffff" opacity="0.55"/>
+        <rect x="245" y="14" width="34" height="64" fill="#ffffff" opacity="0.5"/>
+        <rect x="0" y="95" width="300" height="75" fill="#a3a8ba"/>
+        <line x1="0" y1="132" x2="300" y2="132" stroke="#ffffff" stroke-width="2" stroke-dasharray="10,10"/>
+        <circle cx="150" cy="132" r="26" fill="#8f95a8"/>
+        <circle cx="150" cy="132" r="12" fill="#c7d68f"/>
+        {cars}
     </svg>
     """
 
@@ -171,20 +225,24 @@ st.markdown("""
 
 # ---------- ILLUSTRATIVE SECTION (original artwork, no external images) ----------
 st.markdown('<p class="section-header">🖼️ Congestion Hotspots at a Glance</p>', unsafe_allow_html=True)
-st.caption("Illustrative graphics summarizing typical congestion severity found in this study's analysis.")
+st.caption("Original illustrations depicting typical scenes and congestion severity found in this study's analysis.")
 
-locations_summary = [
-    ("Ubungo", "#dfe8ff", "#5b7fd6", "#a30000", "#ffffff", "Very High"),
-    ("Kariakoo", "#ffe9d6", "#d68a5b", "#b04a00", "#ffffff", "High"),
-    ("Mwenge", "#fff6d6", "#d6c05b", "#8a6d00", "#ffffff", "Moderate"),
+hotspots = [
+    ("Ubungo Flyover", ubungo_illustration, "Very High", "#a30000", 95),
+    ("Kariakoo", kariakoo_illustration, "High", "#b04a00", 75),
+    ("Mwenge", mwenge_illustration, "Moderate", "#8a6d00", 45),
 ]
 
 cols = st.columns(3)
-for col, (name, sky, road, badge, badge_text, level) in zip(cols, locations_summary):
+for col, (name, illustration_fn, level, color, pct) in zip(cols, hotspots):
     with col:
-        st.markdown(road_illustration(sky, road, badge, badge_text), unsafe_allow_html=True)
+        st.markdown(illustration_fn(), unsafe_allow_html=True)
         st.markdown(f'<p class="loc-name">{name}</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="loc-badge">Typical congestion: {level}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="loc-badge" style="color:{color};">Typical congestion: {level}</p>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="meter-track"><div class="meter-fill" style="width:{pct}%;background-color:{color};"></div></div>',
+            unsafe_allow_html=True
+        )
 
 # ---------- SECTION 1: ROAD & TIME ----------
 st.markdown('<p class="section-header">📍 Road & Time Details</p>', unsafe_allow_html=True)
